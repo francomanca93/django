@@ -8,4 +8,4 @@ El contenido de este documento es **proyeco web llamado Platzigram** un **clon d
 
 Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectividad y la extensibilidad que ofrecen los componentes de Django: el framework de desarrollo Web para Python más usado en la actualidad.
 
-Podemos ver la [Documentacion del curso]() para saber más sobre Django y el desarrollo del projecto en cuestión junto a los conceptos de Django.
+Podemos ver la [Documentacion del curso](https://github.com/francomanca93/django/blob/main/documentacion-curso.md) para saber más sobre Django y el desarrollo del projecto en cuestión junto a los conceptos de Django.
