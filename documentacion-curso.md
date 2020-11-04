@@ -28,6 +28,8 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Preparacion del entorno](#preparacion-del-entorno)
     - [Estructura de archivos](#estructura-de-archivos)
     - [Hola, mundo! en Django](#hola-mundo-en-django)
+      - [Levantar servicio](#levantar-servicio)
+      - [Crear la primera vista](#crear-la-primera-vista)
   - [2. Vistas](#2-vistas)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
@@ -157,7 +159,7 @@ pip install django -U
 
 ### Hola, mundo! en Django
 
-Iniciamos server:
+#### Levantar servicio
 
 ```shell
 python3 manage.py runserver
@@ -166,7 +168,9 @@ python3 manage.py runserver
 # http://127.0.0.1:8000
 ```
 
-En el archivo urls.py creamos una funcion para el objetivo y modificamos el urlpatterns:
+#### Crear la primera vista
+
+En el archivo **urls.py** importamos **django.http.HttpResponse** y definimos una **funcion** que devuelva una respuesta (en este caso hello_world), y modificamos el urlpatterns. Establemos en que path estara esta despuesta:
 
 ```py
 from django.http import HttpResponse
