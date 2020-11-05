@@ -45,6 +45,8 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Template](#template)
       - [View](#view)
   - [3. Models](#3-models)
+    - [Models: La M en el MTV](#models-la-m-en-el-mtv)
+      - [Implementar y hacer cambios de modelo](#implementar-y-hacer-cambios-de-modelo)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -627,6 +629,53 @@ Manda la información necesaria el template para que este pueda manejar los dato
 ![mtv_2](https://imgur.com/JqyXBvU.png)
 
 ## 3. Models
+
+### Models: La M en el MTV
+
+[Documentacion Django: Configuración de la base de datos](https://docs.djangoproject.com/es/3.0/intro/tutorial02/)
+
+El Modelo en Django usa diferentes opciones para conectarse a múltiples bases de datos relacionales, entre las que se encuentran: **SQLite, PostgreSQL, Oracle y MySQL**.
+Para la creación de tablas, Django usa la técnica del ORM (Object Relational Mapper), una abstracción del manejo de datos usando OOP.
+
+Las migraciones son la manera en la cual podemos propagar los cambios de nuestros modelos a la base de datos, esto nos ahorra la necesidad de hacer cambios directamente en nuestro gestor de base de datos.
+
+#### Implementar y hacer cambios de modelo
+
+Guía de tres pasos para hacer cambios de modelo:
+
+1. Cambie sus modelos (en models.py).
+
+Ejemplo:
+
+```py
+
+""" Posts models."""
+
+# Django
+from django.db import models
+
+
+class User(models.Model):
+    """ User Model."""
+
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)
+
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+
+    bio = models.TextField(blank=True)
+
+    birthdate = models.DateField(blank=True, null=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+```
+
+2. Ejecute el comando `python manage.py makemigrations` para crear migraciones para esos cambios
+3. Ejecute el comando `python manage.py migrate` para aplicar esos cambios a la base de datos.
+
 
 ## 4. Templates, auth y middlewares
 
