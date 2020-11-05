@@ -37,6 +37,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [El objeto Request](#el-objeto-request-1)
       - [Reto: Crear una vista y su URL. Regresar lista en formato JSON](#reto-crear-una-vista-y-su-url-regresar-lista-en-formato-json)
     - [Pasando argumentos por URL](#pasando-argumentos-por-url)
+    - [Creación de la primera app](#creación-de-la-primera-app)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
@@ -352,6 +353,85 @@ Si al resultado final si ingresamos **age = 27** y **name = Franco** obtenemos e
 
 ![franco_age_27](https://imgur.com/5kU8P5X.png)
 
+### Creación de la primera app
+
+Con Django podemos crear una app de forma rapida y sencilla ejecutando el comando
+
+```shell
+python manage.py startapp name
+```
+
+En este ejemplo creamos un app llamada **posts**, el cual genero una carpeta con todos los archivos basicos necesarios:
+
+![posts_folder_app](https://imgur.com/eYXSCNk.png)
+
+Para desplegar una vista de esta aplicacion vamos al archivo *./posts/views.py* donde crearemos una vista a traves de la funcion **list_posts()**
+
+```py
+""" Posts views."""
+
+# Django
+from django.shortcuts import HttpResponse
+
+# Utilities
+from datetime import datetime
+
+posts = [
+    {
+      'name': 'Mont Blac',
+      'user': 'Franco Manca',
+      'timestamp': datetime.now().strftime("%b %dth, %Y - %H:%M hrs"),
+      'picture': 'https://picsum.photos/id/237/200/200',
+    },
+    {dict_2_con_datos_del_post},
+    {dict_3_con_datos_del_post},
+    {dict_4_con_datos_del_post},
+]
+
+def list_posts(request):
+    """list existing posts"""
+    content=[]
+    for post in posts:
+        content.append("""
+        <p><strong>{name}</strong></p>
+        <p><small>{user} - <i>{timestamp}</i></small></p>
+        <figure><img src="{picture}"/></figure>
+        """.format(**post))
+    return HttpResponse('<br>'.join(content))
+```
+
+Luego vamos al archivo settings de nuestro proyecto, en este caso *./platzigram/settings.py* donde incorporaremos en la variable **INSTALLED_APPS** nuestra nueva app
+
+```py
+INSTALLED_APPS = [
+    # Django apps
+    'django.contrib.admin', . . .
+    .
+    .
+    .
+
+    # Local apps
+    'posts',
+]
+```
+
+Ahora nos toca asignar un path para nuestra vista **list_posts()**. Para eso vamos al archivo **urls.py** de nuestro proyecto, en este caso *./photogram/urls.py* e importamos nuestra nueva app, y le asignamos un path a nuestra vista.
+
+Para que no existan conflictos al llamar views vamos asignar un **alias** para las views de cada aplicacion.
+
+```py
+# Importamos las vistas de nuestra aplicacion posts
+from posts import views as posts_views
+
+urlpatterns = [
+    # Asignamos el path para nuestra vista list_posts
+    path('posts/', posts_views.list_posts),
+]
+```
+
+Ahora vamos a [**http://localhost:8000/posts/**](http://localhost:8000/posts/) para ver nuestro resultado:
+
+![post](https://imgur.com/yyz4BK7.png)
 
 ## 3. Models
 
