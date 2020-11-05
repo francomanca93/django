@@ -26,3 +26,10 @@ def numbers(request):
         json.dumps(data, indent=4),
         content_type='application/json')
     
+def say_hi(request, name, age):
+    """ Return a greeting"""
+    if age < 12:
+        message = 'Sorry {}, you are not allowed here'.format(name)
+    else:
+        message = 'Hello, {}: Welcome to Platzigram'.format(name)
+    return HttpResponse(message)

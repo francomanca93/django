@@ -24,5 +24,6 @@ from platzigram import views
 
 urlpatterns = [
     path('hello-word/', views.hello_word),
-    path('numbers/', views.numbers)
+    path('numbers/', views.numbers),
+    path('hi/<str:name>/<int:age>', views.say_hi),
 ]

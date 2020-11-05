@@ -36,6 +36,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Separando las vistas](#separando-las-vistas)
       - [El objeto Request](#el-objeto-request-1)
       - [Reto: Crear una vista y su URL. Regresar lista en formato JSON](#reto-crear-una-vista-y-su-url-regresar-lista-en-formato-json)
+    - [Pasando argumentos por URL](#pasando-argumentos-por-url)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
@@ -316,6 +317,41 @@ urlpatterns = [
     path('numbers/', views.numbers)
 ]
 ```
+
+### Pasando argumentos por URL
+
+Podemos pasar argumentos a traves de la URL, para esto primero creamos la funcion que hara uso de estos parametros y devolvera la vista en el archivo **views.py**
+
+```py
+def say_hi(request, name, age):
+    """ Return a greeting"""
+    if age < 12:
+        message = 'Sorry {}, you are not allowed here'.format(name)
+    else:
+        message = 'Hello, {}: Welcome to Platzigram'.format(name)
+    return HttpResponse(message)
+```
+
+Luego definimos el path para esta vista en el archivo **urls.py**. Para definir los parametros que pasaran por la url los encerramos con "<>" definiendo el tipo de dato y el nombre del parametro.
+
+```py
+from django.contrib import admin
+from django.urls import path
+from platzigram import views
+
+urlpatterns = [
+  path('hi/<str:name>/<int:age>/', views.say_hi)
+]
+```
+
+En el resultado final si ingresamos **age = 8** y **name = Franco** obtenemos el resultado definido en nuestra funcion **say_hi()**:
+
+![franco_age_8](https://imgur.com/KAxcee4.png)
+
+Si al resultado final si ingresamos **age = 27** y **name = Franco** obtenemos el resultado definido en nuestra funcion **say_hi()**:
+
+![franco_age_27](https://imgur.com/5kU8P5X.png)
+
 
 ## 3. Models
 
