@@ -40,6 +40,10 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Creación de la primera app](#creación-de-la-primera-app)
     - [Template system](#template-system)
       - [Pasando datos a nuestro template](#pasando-datos-a-nuestro-template)
+    - [Patrones de diseño y Django](#patrones-de-diseño-y-django)
+      - [Model](#model)
+      - [Template](#template)
+      - [View](#view)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
@@ -595,6 +599,32 @@ Y en [**http://localhost:8000/posts/**](http://localhost:8000/posts/) veremos
 :
 
 ![pantalla](https://imgur.com/ffyFMgo.gif)
+
+### Patrones de diseño y Django
+
+Un patrón de diseño, en términos generales, es una solución reutilizable a un problema común.
+
+El patrón más común para el desarrollo web es MVC (Model, View, Controller). Django implementa un patrón similar llamado MTV (Model, Template (plantilla), View).
+
+![mtv](https://imgur.com/37Ornu6.png)
+
+#### Model
+
+Es la forma en la que creamos esquemas de objetos (un usuario, un post, etc) para representarlos en nuestra base de datos.
+
+El modelo sin importar nuestro sistema de BD (mysql, postgress, etc) nos ayudara a crear esta entidad a través de un OMR, esto nos ahorra la molestia de tener que escribir las sentencias de SQL para crear las tablas y atributos.
+
+#### Template
+
+Es el encargado de manejar la lógica y sintaxis de la información que se va a presentar en el cliente, el sistema de templates de django usa HTML para ello.
+
+#### View
+
+Su función es solo suministrar datos al template
+
+Manda la información necesaria el template para que este pueda manejar los datos y presentarlos de una manera correcta.
+
+![mtv_2](https://imgur.com/JqyXBvU.png)
 
 ## 3. Models
 
