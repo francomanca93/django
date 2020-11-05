@@ -19,12 +19,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from django.http import HttpResponse
 
-def hello_word(request):
-    """ Return a geeting"""
-    return HttpResponse('Hello, World!. Hi Franco')
+from platzigram import views
 
 urlpatterns = [
-    path('hello-word/', hello_word)
+    path('hello-word/', views.hello_word),
+    path('numbers/', views.numbers)
 ]

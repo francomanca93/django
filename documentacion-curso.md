@@ -31,6 +31,10 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Levantar servicio](#levantar-servicio)
       - [Crear la primera vista](#crear-la-primera-vista)
   - [2. Vistas](#2-vistas)
+    - [El objeto Request](#el-objeto-request)
+      - [Como Django procesa un request](#como-django-procesa-un-request)
+      - [Separando las vistas](#separando-las-vistas)
+      - [El objeto Request](#el-objeto-request-1)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
@@ -191,6 +195,91 @@ http://127.0.0.1:8000/hello-word/
 ```
 
 ## 2. Vistas
+
+### El objeto Request
+
+#### Como Django procesa un request
+
+[How Django processes a request](https://docs.djangoproject.com/en/2.0/topics/http/urls/#how-django-processes-a-request)
+
+1. Primero va a buscar en el archivo **settings.py** en la variable **ROOT_URLCONF**.
+2. Luego Django desde el archivo **urls.py** carga los modulos de Python definidos en la variable **urlpatterns**.
+3. Dentro de **urlpatterns** se busca el patron coincidente a la peticion.
+4. Una vez encontrado la URL que coincide, Django importa y llama la vista en una funcion simple en Python. Se le pasa como argumento:
+    - Una instancia del HttpRequest.
+    - Si la URL pasa mas argumentos entonces los entregara.
+    - Si definimos argumentos adicionales tambien lo enviara.
+5. Si ninguna URL coincide, Django enviara una excepción.
+
+#### Separando las vistas
+
+Es buena practica tener las vistas separadas del archivo url.py, por lo que crearemos un archivo **views.py** dentro de nuestra aplicación que contendra las vistas:
+
+![views](https://imgur.com/5nyzbba.png)
+
+Dentro de nuestro archivo **views.py** importamos **HttpResponse** y traemos nuestra funcion **hello_world()** creado en urls.py
+
+```py
+from django.http import HttpResponse
+
+def hello_world(request):
+    return HttpResponse('Hello, world!')
+```
+
+Ahora debemos importar nuestra funcion al archivo **urls.py**.
+No olvidemos **borrar** la importacion de HttpResponse y la funcion hello_world() en el archivo.
+
+```py
+from django.contrib import admin
+from django.urls import path
+from platzigram import views
+
+urlpatterns = [
+    path('hello-world/', views.hello_world)
+]
+```
+
+Si revisamos la url [**http://localhost:8000/hello-world**](http://localhost:8000/hello-world) nuestro proyecto seguira funcionando.
+
+#### El objeto Request
+
+A traves del objeto request podemos acceder a varios atributos  los cuales se encuentran detallados en la [documentación](https://docs.djangoproject.com/en/3.0/ref/request-response/) de Django. Algunos atributos utiles son:
+
+- **request.method:** nos muestra el metodo HTTP ("GET", "POST", etc.) usado por el request en formato de string en UPPERCASE. Un ejemplo de uso seria:
+
+  ```py
+  if request.method == 'GET':
+    do_something()
+  elif request.method == 'POST':
+    do_something_else()
+  ```
+
+- **request.GET:** Un diccionario que contiene todos los parametros entregados por HTTP GET. Por ejemplo:
+
+Pasamos una lista de numeros en la variable numbers **(?numbers)**
+
+```http
+http://127.0.0.1:8000/hi/?numbers=10,4,50,36  
+```
+
+Para acceder a la lista usamos:
+
+```py
+request.GET['numbers']
+```
+
+>*Nota: En el siguiente ejemplo se creo la vista numbers*
+  
+Un ejemplo practico seria:
+
+```py
+def numbers(request):
+    """ Numbers."""
+    numbers = request.GET['numbers']
+    return HttpResponse(f'Hi! Franco. Numeros de la URL: {str(numbers)}')
+```
+
+  De esta forma podemos ver los valores de number a traves de nuetra vista.
 
 ## 3. Models
 
