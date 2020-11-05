@@ -47,6 +47,17 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
   - [3. Models](#3-models)
     - [Models: La M en el MTV](#models-la-m-en-el-mtv)
       - [Implementar y hacer cambios de modelo](#implementar-y-hacer-cambios-de-modelo)
+    - [El ORM de Django](#el-orm-de-django)
+  - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
+  - [5. Forms](#5-forms)
+  - [6. Class-based views](#6-class-based-views)
+  - [7. Deployment](#7-deployment)
+  - [8. Bonus](#8-bonus)
+<<<<<<< Updated upstream
+      - [Implementar y hacer cambios de modelo](#implementar-y-hacer-cambios-de-modelo)
+=======
+    - [El ORM de Django](#el-orm-de-django)
+>>>>>>> Stashed changes
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -676,6 +687,64 @@ class User(models.Model):
 2. Ejecute el comando `python manage.py makemigrations` para crear migraciones para esos cambios
 3. Ejecute el comando `python manage.py migrate` para aplicar esos cambios a la base de datos.
 
+### El ORM de Django
+
+> *Veremos: Como insertar datos en el modelo creado anteriormente, como hacer consultas y como hacer filtros*.
+
+Podemos abrir la terminar de Django: `python3 manage.py shell` y escribir lo siguiente:
+
+```shell
+
+>>> franco = User.objects.create(
+...      email='hola@gmail.com',
+...      password='123456',
+...      first_name='Franco',
+...      last_name='Manca'
+... )
+>>> franco.email
+'hola@gmail.com'
+>>> franco.id
+1
+>>> franco.pk
+1
+>>> franco.email = 'franco@gmail.com'
+>>> franco.save()
+
+```
+
+Y podremos ver los cambios reflejados en el Browser de SQLite3
+
+![cambios_sqlite3](https://imgur.com/nOdzRi6.png)
+
+Si quiero borrar el dato, con su variable hago lo siguiente:
+
+```shell
+>>> franco.delete()
+```
+
+En la documentacion podemos ver como hacer consultas: [Making queries](https://docs.djangoproject.com/en/3.1/topics/db/queries/)
+En el siguiente bloque podemos ver ejemplos simples:
+
+```shell
+
+>>> from posts.models import User
+>>> user = User.objects.get(email='freddier@platzi.com')
+>>> user
+<User: User object (4)>
+>>> type(user)
+<class 'posts.models.User'>
+>>> user.pk
+4
+>>> user.password
+'987654321'
+
+```
+
+- `Model.objects.get` tratará de encontrar **UN SÓLO** registro en la base de datos que cumpla con los parámetros enviados, si existe **UNO**, lo regresa, si no existe, lanza una excepción y si encuentra varios también lanzará una excepción.
+  - `user = User.objects.get()` Te permite obtener los valores unitario del registro. Ej: `user.first_name` pero aquí no puedes usar un update, con filter lo podrás hacer.
+
+- `Model.objects.filter` ejecuta un query de consulta a la base de datos usando los parámetros enviados y regresa un objeto de la clase Queryset, ese queryset es iterable y puede contener 0, 1 o más elementos.
+  - `user = User.objects.filter(email=‘freddier@platzi.com’)` Obtienes solo ese registro pero no puedes acceder directamente a sus atributos como con get, aquí deberías de hacer un for loop para recorrer y obtener cada valor.
 
 ## 4. Templates, auth y middlewares
 
