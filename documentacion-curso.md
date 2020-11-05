@@ -38,6 +38,8 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Reto: Crear una vista y su URL. Regresar lista en formato JSON](#reto-crear-una-vista-y-su-url-regresar-lista-en-formato-json)
     - [Pasando argumentos por URL](#pasando-argumentos-por-url)
     - [Creación de la primera app](#creación-de-la-primera-app)
+    - [Template system](#template-system)
+      - [Pasando datos a nuestro template](#pasando-datos-a-nuestro-template)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
@@ -432,6 +434,167 @@ urlpatterns = [
 Ahora vamos a [**http://localhost:8000/posts/**](http://localhost:8000/posts/) para ver nuestro resultado:
 
 ![post](https://imgur.com/yyz4BK7.png)
+
+### Template system
+
+El template system es una manera de mostrar los datos usando HTML, incluye lógica de programacion lo cual nos facilita un poco el crear nuestros templates.
+
+Para crear nuestros templates lo que haremos es dentro de nuestra aplicacion **crear una carpeta templates** y un **archivo html** con el nombre de nuestro template, en este caso _feed.html_
+
+![feed](https://imgur.com/qzYy8ZO.png)
+
+Dentro de nuestro archivo **feed.html** solo escribiremos:
+
+```html
+Hola, mundo!
+```
+
+Y dentro de **views.py** de nuestra aplicación ya no es necesario el HttpResponse, por que borramos su importación. A través de la función que devolvemos nuestra vista devolveremos nuestro nuevo template con el metodo **render**, que le pasaremos la request y la vista:
+
+```py
+from django.shortcuts import render
+
+def list_posts(request):
+    return render(request, 'feed.html')
+```
+
+Si revisamos el path [**http://localhost:8000/posts/**](http://localhost:8000/posts/) tendremos nuestro "Hola, mundo!"
+
+¿Como logro funcionar si dentro de render jamas definimos la ruta donde buscar nuestro template? (en nuetro caso solo _feed.html_). Si revisamos en el archivo **settings.py** de nuestro proyecto, en la definicion de **TEMPLATES** veremos:
+
+```py
+...
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+...
+
+```
+
+En **APP_DIRS** lo tenemos definido como **True**, esto significa que las aplicaciones buscaran los templates dentro de sus directorios, de esta forma funciona sin tener que nombrar la dirección de nuestro template.
+
+#### Pasando datos a nuestro template
+
+Primero crearemos un diccionario de datos dentro de nuestra vista (solo a modo de ejemplo) y enviaremos al template estos datos a traves del render. En nuestro caso este diccionario sera posts
+
+```py
+# Django
+from django.shortcuts import render
+
+# Utilities
+from datetime import datetime
+
+posts = [
+    {
+        'title': 'Mont Blanc',
+        'user': {
+            'name': 'Yésica Cortés',
+            'picture': 'https://picsum.photos/60/60/?image=1027'
+        },
+        'timestamp': datetime.now().strftime('%b %dth, %Y - %H:%M hrs'),
+        'photo': 'https://picsum.photos/800/600?image=1036',
+    },
+    {
+        'title': 'Via Láctea',
+        'user': {
+            'name': 'Christian Van der Henst',
+            'picture': 'https://picsum.photos/60/60/?image=1005'
+        },
+        'timestamp': datetime.now().strftime('%b %dth, %Y - %H:%M hrs'),
+        'photo': 'https://picsum.photos/800/800/?image=903',
+    },
+    {
+        'title': 'Nuevo auditorio',
+        'user': {
+            'name': 'Uriel (thespianartist)',
+            'picture': 'https://picsum.photos/60/60/?image=883'
+        },
+        'timestamp': datetime.now().strftime('%b %dth, %Y - %H:%M hrs'),
+        'photo': 'https://picsum.photos/500/700/?image=1076',
+    }
+]
+
+def list_posts(request):
+    """List existing posts."""
+    return render(request, 'feed.html', {'posts': posts})
+```
+
+Si logran observar enviamos los datos a traves de **{'posts': posts}**, el cual el **primer parametro sera el nombre de la variable** al momento de enviar al template, y el **segundo es el valor asignado**.
+
+En nuestro template _feed.html_ ahora imprimiremos nuestro diccionario escribiendo el **nombre de la variable**.
+
+```html
+{{ posts }}
+```
+
+Si revisamos [**http://localhost:8000/posts/**](http://localhost:8000/posts/) veremos nuestro diccionario.
+
+Ahora juguemos un poco con la **lógica de programación** y **html**. Vamos a imprimir solo los títulos. Para eso en nuestro **template** _feed.html_ escribiremos:
+
+```html
+{% for post in posts %}
+  <p>{{ post.title }}</p>
+{% endfor %}
+```
+
+Y el resultado en [**http://localhost:8000/posts/**](http://localhost:8000/posts/)
+
+![logica_y_html](https://imgur.com/JhIVeE5.png)
+
+Para ver toda la **lógica de programación** que podemos crear en el template system te recomiendo ir a la [documentación de Django.](https://docs.djangoproject.com/en/3.0/ref/templates/builtins/)
+
+Ahora despleguemos los datos de nuestro diccionario y estilemos con **Bootstrap** nuestro template _feed.html_.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Platzigram</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+</head>
+<body>
+    <br><br>
+    <div class="container">
+        <div class="row">
+            {% for post in posts %}
+            <div class="col-lg-4 offset-lg-4">
+                <div class="media">
+                    <img class="mr-3 rounded-circle" src="{{ post.user.picture }}" alt="{{ post.user.name }}">
+                    <div class="media-body">
+                        <h5 class="mt-0">{{ post.user.name }}</h5>
+                        {{ post.timestamp }}
+                    </div>
+                </div>
+                <img class="img-fluid mt-3 border rounded" src="{{ post.photo }}" alt="{{ post.title }}">
+                <h6 class="ml-1 mt-1">{{ post.title }}</h6>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
+
+```
+
+Y en [**http://localhost:8000/posts/**](http://localhost:8000/posts/) veremos
+:
+
+![pantalla](https://imgur.com/ffyFMgo.gif)
 
 ## 3. Models
 
