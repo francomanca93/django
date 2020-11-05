@@ -5,6 +5,7 @@ from django.http import HttpResponse
 
 # Utilities
 from datetime import datetime
+import json
 
 
 def hello_word(request):
@@ -14,5 +15,14 @@ def hello_word(request):
 
 def numbers(request):
     """ Numbers."""
-    numbers = request.GET['numbers']
-    return HttpResponse(f'Hi! Franco. Numeros de la URL: {str(numbers)}')
+    numbers = [int(i) for i in request.GET['numbers'].split(',')]
+    sorted_ints = sorted(numbers)
+    data = {
+        'status': 'ok',
+        'numbers': sorted_ints,
+        'message': 'Integers sorted succesfully.'
+    }
+    return HttpResponse(
+        json.dumps(data, indent=4),
+        content_type='application/json')
+    

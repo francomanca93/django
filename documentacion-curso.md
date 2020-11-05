@@ -35,6 +35,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Como Django procesa un request](#como-django-procesa-un-request)
       - [Separando las vistas](#separando-las-vistas)
       - [El objeto Request](#el-objeto-request-1)
+      - [Reto: Crear una vista y su URL. Regresar lista en formato JSON](#reto-crear-una-vista-y-su-url-regresar-lista-en-formato-json)
   - [3. Models](#3-models)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
@@ -280,6 +281,41 @@ def numbers(request):
 ```
 
   De esta forma podemos ver los valores de number a traves de nuetra vista.
+
+#### Reto: Crear una vista y su URL. Regresar lista en formato JSON
+
+Reto de la clase: Crea una vista y su respectiva URL en la que recibas números y hagas operaciones con ellos.
+Regresa la lista ordenada de números en formato json.
+
+En views.py:
+
+```py
+import json
+
+def numbers(request):
+    """ Numbers."""
+    numbers = [int(i) for i in request.GET['numbers'].split(',')]
+    sorted_ints = sorted(numbers)
+    data = {
+        'status': 'ok',
+        'numbers': sorted_ints,
+        'message': 'Integers sorted succesfully.'
+    }
+    return HttpResponse(
+        json.dumps(data, indent=4),
+        content_type='application/json')
+
+```
+
+En urls.py:
+
+```py
+from platzigram import views
+
+urlpatterns = [
+    path('numbers/', views.numbers)
+]
+```
 
 ## 3. Models
 
