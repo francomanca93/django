@@ -48,16 +48,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Models: La M en el MTV](#models-la-m-en-el-mtv)
       - [Implementar y hacer cambios de modelo](#implementar-y-hacer-cambios-de-modelo)
     - [El ORM de Django](#el-orm-de-django)
-  - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
-  - [5. Forms](#5-forms)
-  - [6. Class-based views](#6-class-based-views)
-  - [7. Deployment](#7-deployment)
-  - [8. Bonus](#8-bonus)
-<<<<<<< Updated upstream
-      - [Implementar y hacer cambios de modelo](#implementar-y-hacer-cambios-de-modelo)
-=======
-    - [El ORM de Django](#el-orm-de-django)
->>>>>>> Stashed changes
+    - [Extendiendo el modelo de usuario](#extendiendo-el-modelo-de-usuario)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -652,6 +643,8 @@ Las migraciones son la manera en la cual podemos propagar los cambios de nuestro
 
 #### Implementar y hacer cambios de modelo
 
+> NOTA: Lo que hagamos aca es prueba para saber como funciona unicamente. A partir de la sección [Extendiendo el modelo de usuario](#extendiendo-el-modelo-de-usuario) haremos las cosas como corresponde.
+
 Guía de tres pasos para hacer cambios de modelo:
 
 1. Cambie sus modelos (en models.py).
@@ -745,6 +738,12 @@ En el siguiente bloque podemos ver ejemplos simples:
 
 - `Model.objects.filter` ejecuta un query de consulta a la base de datos usando los parámetros enviados y regresa un objeto de la clase Queryset, ese queryset es iterable y puede contener 0, 1 o más elementos.
   - `user = User.objects.filter(email=‘freddier@platzi.com’)` Obtienes solo ese registro pero no puedes acceder directamente a sus atributos como con get, aquí deberías de hacer un for loop para recorrer y obtener cada valor.
+
+### Extendiendo el modelo de usuario
+
+El modelo de usuarios que acabamos de construir funciona bien y es válido, sin embargo tiene algunas cosas que podrían representar fallas de seguridad en la aplicación. Por esto vamos a explorar el modelo de usuarios que nos provee Django.
+
+En la documentacion oficial de Django en la seccion **[django/contrib/auth/models.py](https://github.com/django/django/blob/master/django/contrib/auth/models.py)** podemos buscar `class AbstractUser` y ver el modelo de usuario que nos provee Django.
 
 ## 4. Templates, auth y middlewares
 
