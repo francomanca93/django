@@ -56,6 +56,8 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Implementación del modelo de usuarios de Platzigram](#implementación-del-modelo-de-usuarios-de-platzigram)
       - [Implementación de modelos](#implementación-de-modelos)
       - [Implementar modelos en base de datos](#implementar-modelos-en-base-de-datos)
+    - [Explorando el dashboard de administración](#explorando-el-dashboard-de-administración)
+      - [Reflejar modelos en dashboard de administración](#reflejar-modelos-en-dashboard-de-administración)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -860,6 +862,35 @@ Ahora aplicaremos los cambios auditados en nuestra base de datos.
 ```
 python manage.py migrate
 ```
+
+### Explorando el dashboard de administración
+
+> Registraremos el perfil que acabamos de customizar, junto con el modelo extendido de Usuario, en el admin de Django para poder manejarlo desde la aplicación.
+
+Esto puede hacerse de dos formas: con admin.site.register(Profile) o creando una nueva clase que herede de Admin.ModelAdmin.
+
+#### Reflejar modelos en dashboard de administración
+
+En primera instancia no podremos ver los _modelos_ que creamos en el dashboard de administración. La clase **ModelAdmin** es la representacion del modelo en la interfaz de administración. Para reflejarlo debemos almacenar el _modelo_ en el archivo **admin.py** de nuestra aplicación.
+
+```py
+# Django
+from django.contrib import admin
+
+# Modelos
+from users.models import Profile
+
+# Registramos nuestros modelos aquí.
+admin.site.register(Profile)
+```
+
+De esta forma tendremos la interfaz de administración predeterminada, en nuestro caso incluimos el modelo **Profile**.
+
+![profile_1](https://imgur.com/FIW5GtK.png)
+
+![profile_2](https://imgur.com/qedBO59.png)
+
+![profile_3](https://imgur.com/HJdN0NB.png)
 
 ## 4. Templates, auth y middlewares
 
