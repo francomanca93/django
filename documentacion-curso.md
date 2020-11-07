@@ -44,11 +44,18 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Model](#model)
       - [Template](#template)
       - [View](#view)
-  - [3. Models](#3-models)
+  - [Models: Una práctica desde 0](#models-una-práctica-desde-0)
     - [Models: La M en el MTV](#models-la-m-en-el-mtv)
       - [Implementar y hacer cambios de modelo](#implementar-y-hacer-cambios-de-modelo)
     - [El ORM de Django](#el-orm-de-django)
     - [Extendiendo el modelo de usuario](#extendiendo-el-modelo-de-usuario)
+  - [3. Models](#3-models)
+    - [Configuración básica](#configuración-básica)
+      - [Creacion de Super Usuario](#creacion-de-super-usuario)
+      - [Dashboard de Administración](#dashboard-de-administración)
+    - [Implementación del modelo de usuarios de Platzigram](#implementación-del-modelo-de-usuarios-de-platzigram)
+      - [Implementación de modelos](#implementación-de-modelos)
+      - [Implementar modelos en base de datos](#implementar-modelos-en-base-de-datos)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -630,7 +637,7 @@ Manda la información necesaria el template para que este pueda manejar los dato
 
 ![mtv_2](https://imgur.com/JqyXBvU.png)
 
-## 3. Models
+## Models: Una práctica desde 0
 
 ### Models: La M en el MTV
 
@@ -744,6 +751,115 @@ En el siguiente bloque podemos ver ejemplos simples:
 El modelo de usuarios que acabamos de construir funciona bien y es válido, sin embargo tiene algunas cosas que podrían representar fallas de seguridad en la aplicación. Por esto vamos a explorar el modelo de usuarios que nos provee Django.
 
 En la documentacion oficial de Django en la seccion **[django/contrib/auth/models.py](https://github.com/django/django/blob/master/django/contrib/auth/models.py)** podemos buscar `class AbstractUser` y ver el modelo de usuario que nos provee Django.
+
+## 3. Models
+
+### Configuración básica
+
+#### Creacion de Super Usuario
+
+Para crear un **super usuario** en Django escribimos en la consola:
+
+```shell
+python3 manage.py createsuperuser
+```
+
+Nos preguntara un **username, email (opcional), y contrañesa**, con esto ya tendriamos nuestro super usuario.
+
+#### Dashboard de Administración
+
+Django cuenta con un dashboard de administración. Para acceder a el debemos darle un path dentro del archivo **urls.py** de nuestro proyecto. Para esto importamos **django.contrib.admin** y le asignamos la dirección que deseamos
+
+```py
+from django.contrib import admin
+from django.urls import path
+
+urlpatterns = [
+  path('admin/', admin.site.urls),
+```
+
+En este caso le dimos el path **admin/** para acceder a el. Entonces vamos a la dirección [**http://localhost:8000/admin/**](http://localhost:8000/admin/) para ingresar.
+
+Para ingresar utilizaremos el **super usuario** que creamos en la **[sección de creación de super usuario.](#creacion-de-super-usuario)**
+
+### Implementación del modelo de usuarios de Platzigram
+
+Las opciones que Django propone para implementar Usuarios personalizados son:
+
+- Usando el Modelo proxy
+- Extendiendo la clase abstracta de Usuario existente. La opción **OneToOneField** restringe la posibilidad de tener perfiles duplicados.
+
+Django no guarda archivos de imagen en la base de datos sino la referencia de su ubicación.
+
+#### Implementación de modelos
+
+Con Django podemos crear modelos de clases de nuestra aplicación.
+
+Para estos ejemplos crearemos una nueva aplicacion de usuarios en nuestro proyecto.
+
+```
+python manage.py startapp users
+```
+
+En el archivo **models.py** de la nueva aplicación crearemos el modelo de nuestros usuarios, el cual sera una clase _Profile_, y los tipos de valores para la clase _models_ estan definidos en la [documentación.](https://docs.djangoproject.com/en/3.0/ref/models/fields/)
+
+Para poder cargar las referencias de imagenes en neustro modelo instalaremos en nuestro ambiente Pillow, esto nos servira para la siguiente sección.
+
+```
+pip install pillow
+```
+
+Ahora creamos el modelo de usuarios:
+
+```py
+# Django
+from django.contrib.auth.models import User, update_last_login
+from django.db import models
+from django.db.models.base import Model
+
+
+class Profile(models.Model):
+    """
+    Profile model.
+
+    Proxy model that extecnds the base data with other 
+    information.
+    """
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    website = models.URLField(max_length=200, blank=True)
+    biography = models.TextField(blank=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+
+    picture = models.ImageField(
+        upload_to='users/picture',
+        blank=True,
+        null=True
+        )
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        """ Return username."""
+        return self.user.username
+
+```
+
+#### Implementar modelos en base de datos
+
+Los modelos creados en nuestras aplicaciones podemos aplicarlos en el esquema de nuestra base de datos. Primero debemos auditar los cambios en los modelos con:
+
+```
+python manage.py makemigrations
+```
+
+Ahora aplicaremos los cambios auditados en nuestra base de datos.
+
+```
+python manage.py migrate
+```
 
 ## 4. Templates, auth y middlewares
 
