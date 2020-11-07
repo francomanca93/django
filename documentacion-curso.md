@@ -58,6 +58,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Implementar modelos en base de datos](#implementar-modelos-en-base-de-datos)
     - [Explorando el dashboard de administración](#explorando-el-dashboard-de-administración)
       - [Reflejar modelos en dashboard de administración](#reflejar-modelos-en-dashboard-de-administración)
+      - [Dashboard administrativo personalizado](#dashboard-administrativo-personalizado)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -891,6 +892,56 @@ De esta forma tendremos la interfaz de administración predeterminada, en nuestr
 ![profile_2](https://imgur.com/qedBO59.png)
 
 ![profile_3](https://imgur.com/HJdN0NB.png)
+
+#### Dashboard administrativo personalizado
+
+Si queremos mostrar nuestra lista de modelos de una forma personalizada, con Django podemos realizarlo. Para esto debemos crear una clase **ModelAdmin**:
+
+```py
+# Django
+from django.contrib import admin
+
+# Modelo
+from users.models import Profile
+
+# Decoramos la clase con el modelo.
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin): #Por convencion la clase que creemos debe terminar en Admin.
+
+    # Con list_display nombramos los campos que queremos visualizar.
+    list_display = ('pk', 'user', 'phone_number', 'website', 'picture')
+
+    # list_display_links establece como links los campos nombrados.
+    list_display_links = ('pk', 'user')
+
+    # list_editable nos permite editar el campo desde
+    # la lista del modelo en vez de ingresar al detalle del registro.
+    list_editable = ('phone_number')
+
+    # Para crear un buscador hacemos uso de search_fields.
+    # Los campos que se ingresan seran los que el buscador recorrera para realizar las busquedas.
+    search_fields = (
+        'user__username',
+        'user__email',
+        'user__first_name',
+        'user__last_name',
+        'phone_number'
+    )
+
+    # Podemos crear un filtro para nuestro dashboard del modelo,
+    # para ello usamos list_filter, y definimos los campos con los que trabajara.
+    list_filter = (
+        'user__is_active',
+        'user__is_staff',
+        'created',
+        'modified'
+        )
+```
+
+![profile](https://imgur.com/oNuwdge.png)
+
+Para mas opciones de personalización siempre puedes revisar la [documentación.](https://docs.djangoproject.com/en/3.0/ref/contrib/admin/#modeladmin-options)
+
 
 ## 4. Templates, auth y middlewares
 
