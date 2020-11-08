@@ -59,6 +59,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Explorando el dashboard de administración](#explorando-el-dashboard-de-administración)
       - [Reflejar modelos en dashboard de administración](#reflejar-modelos-en-dashboard-de-administración)
       - [Dashboard administrativo personalizado](#dashboard-administrativo-personalizado)
+    - [Personalizando Dashboards Nativos](#personalizando-dashboards-nativos)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -942,6 +943,94 @@ class ProfileAdmin(admin.ModelAdmin): #Por convencion la clase que creemos debe 
 
 Para mas opciones de personalización siempre puedes revisar la [documentación.](https://docs.djangoproject.com/en/3.0/ref/contrib/admin/#modeladmin-options)
 
+### Personalizando Dashboards Nativos
+
+> Editaremos el detalle para que sea igual de complejo que el detalle de Usuario y le agregaremos los datos del perfil para no tener que estar cambiando de urls. Usaremos `fieldsets` y `admin.StackedInline`.
+
+En la documentación de Django, podemos ver [cómo funcionan los fieldsets](https://docs.djangoproject.com/en/3.0/ref/contrib/admin/).
+
+Existe la posibilidad de personalizar los dashboard nativos de Django, para ello vamos a trabajar sobre el modelo de **Users** para el cual vamos a visualizar los datos que definamos y tambien al momento de crear un usuario tambien podremos crear dentro del proceso una instancia de nuestro modelo _Profile_.
+
+Agregamos las siguientes librerias en admin.py
+
+```py
+# Django
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+
+# Models
+from django.contrib.auth.models import User
+```
+
+Estando en admin.py agregamos datos al `ProfileAdmin` y las clases `ProfileInline` y `UserAdmin`.
+
+```py
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    """ Profile admin."""
+
+    ...
+
+    fieldsets = (
+        ('Profile', {
+            'fields': (
+                ('user', 'picture'),),
+        }),
+        ('Extra info', {
+            'fields': (
+                ('website', 'phone_number'),
+                ('biography'),
+            )
+        }),
+        ('Metadata', {
+            'fields': (('created', 'modified'),
+                       ),
+        })
+    )
+
+    readonly_fields = ('created', 'modified',)
+
+
+# Aqui definiremos el modelo que deseamos asociar a User, en nuestro caso Profile.
+class ProfileInline(admin.StackedInline):
+    """ Profile in-line admin for users."""
+
+    model = Profile
+    can_delete = False
+    verbose_name_plural = 'profiles'
+
+
+# Luego para asociar los modelos e insertarlo en el Dashboard usaremos
+# el UserAdmin de Django el cual le dimos el alias de BaseUserAdmin.
+class UserAdmin(BaseUserAdmin):
+    """ Add profile admin to base user admin."""
+
+    inlines = (ProfileInline,) # Con inlines desplegaremos los campos que hay que llenar asociados a Profile.
+    list_display = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'is_active',
+        'is_staff'
+    )
+
+
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
+
+
+```
+
+Si vamos a crear un nuevo **User** podremos encontrar los campos asociados a nuestro modelo _Profile_ que definimos en la variable _inlines_
+
+![adding_user_with_profile](https://imgur.com/zLvv41L.png)
+
+Y si revisamos la lista de registro **User** veremos los cambios realizados en la variable _list_display_.
+
+![items_peer_users](https://imgur.com/wIRPMo2.png)
+
+En la [documentación](https://docs.djangoproject.com/en/3.0/ref/contrib/admin/#modeladmin-options) tenemos muchas mas formas de personalización.
 
 ## 4. Templates, auth y middlewares
 
