@@ -67,6 +67,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Archivos estáticos](#archivos-estáticos)
     - [Templates](#templates)
     - [Login | Protegiendo vistas](#login--protegiendo-vistas)
+    - [Logout](#logout)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
@@ -1325,6 +1326,62 @@ def list_posts(request):
 Ahora veamos las vistas protegidas en acción. Con un usuario **sin registrar** nos va a volver a redirigir a la pagina de login.
 
 Y si el usuario está **registrado** podremos ver los posts.
+
+### Logout
+
+> Completaremos el flujo de autenticación del usuario anterior agregando la funcionalidad de Logout. Ademas incorporamos algo de estilos al formulario de Login.
+
+[Documentación de Logout de Django](https://docs.djangoproject.com/en/3.1/topics/auth/default/#how-to-log-a-user-out)
+
+El proceso de **logout** es bastante sencillo en Django. Primero iremos a las vistas de nuestro aplicativo y crearemos una función para ello.
+
+```py
+# Archivo users/views.py
+# Django
+# Importamos logout y el un decorador (login_required)
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+
+
+# Creamos la funcion logout_view, y lo decoramos con
+# login_required, asi solo se ejecutara si existe una sesión.
+@login_required
+def logout_view(request):
+    """ Logout a user."""
+    logout(request) # Ejecutamos logout, el cual borrara los tokens del navegador.
+    return redirect('login') # Redirigimos a path de login.
+```
+
+Luego de ello iremos a las _urls.py_ de nuestro proyecto.
+
+```py
+
+...
+
+urlpatterns = [
+  ...
+  # Creamos el path de logout.
+  path('users/logout', users_views.logout_view, name='logout'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+
+Y por terminar, en el **html** haremos referencia al path de 'logout'.
+
+```html
+<!-- templates/nav.html -->
+{% load static %}
+...
+        <li class="nav-item nav-icon">
+          # Hacemos referencia al path de 'logout' en nuestro elemento.
+          <a href="{% url 'logout' %}">
+            <i class="fas fa-sign-out-alt"></i>
+          </a>
+        </li>
+...
+```
+
+Listo, ahora tenemos un logout funcionando perfectamente de forma sencilla.
 
 ## 5. Forms
 

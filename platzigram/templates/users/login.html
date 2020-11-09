@@ -8,7 +8,7 @@
     
     <!-- En caso de que estemos recibiendo la variable 'error' en el renderizado lo mostraremos. -->
     {% if error %}
-        <p style="color: red;">{{ error }}</p>
+        <p class="alert alert-danger">{{ error }}</p>
     {% endif %}
     
     <!-- Agregamos {% url "login" %} para poder invocar como 'login' y si alguna vez cambia url no habrá problemas. -->
