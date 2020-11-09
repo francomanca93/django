@@ -60,6 +60,8 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Reflejar modelos en dashboard de administración](#reflejar-modelos-en-dashboard-de-administración)
       - [Dashboard administrativo personalizado](#dashboard-administrativo-personalizado)
     - [Personalizando Dashboards Nativos](#personalizando-dashboards-nativos)
+    - [Relacionando modelos](#relacionando-modelos)
+    - [Hacer funcionar los links de medias en desarollo](#hacer-funcionar-los-links-de-medias-en-desarollo)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -1031,6 +1033,82 @@ Y si revisamos la lista de registro **User** veremos los cambios realizados en l
 ![items_peer_users](https://imgur.com/wIRPMo2.png)
 
 En la [documentación](https://docs.djangoproject.com/en/3.0/ref/contrib/admin/#modeladmin-options) tenemos muchas mas formas de personalización.
+
+### Relacionando modelos
+
+¿Que pasa si en nuestro proyecto un modelo depende de otro? Un ejemplo de esto puede ser un **_post_** que solo es posible que exista si esta relacionado con un **_usuario_**. Afortunadamente en Django podemos relacionar los modelos, en nuestro caso lo haremos con el modelo de **posts**, por lo iremos al archivo _posts/models.py_.
+
+```py
+""" Posts models."""
+
+# Django
+from django.db import models
+from django.contrib.auth.models import User
+
+
+class Post(models.Model):
+    """Post model."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    # Con ForeignKey podemos relacionar el modelo de posts con profile,
+    # y para hacer referencia a la clase relacionada lo hacemos con
+    # el formato de 'aplicacion.NombreClaseDelModelo'.
+    profile = models.ForeignKey('users.Profile', on_delete=models.CASCADE)
+
+    title = models.CharField(max_length=255)
+    photo = models.ImageField(upload_to='posts/photos')
+
+    created = models.DateTimeField(auto_now_add=True)
+    modified = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        """ Return title and username"""
+        return '{} by @{}'.format(self.title, self.user.username)
+
+```
+
+### Hacer funcionar los links de medias en desarollo
+
+¿Te fijaste que los links de los campos de nuestros registros nos llevaba al detalle de estos? Para que estos links nos lleven realmente a sus referencias debemos realizar algunos cambios en el archivo **urls.py** y **settings.py**.
+
+En nuestro archivo **settings.py** declararemos 2 variables en el fondo del archivo.
+
+```py
+...
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
+```
+
+Luego iremos al archivo **urls.py** y a _urlpatterns_ donde tenemos definidos los path de nuestras aplicaciones vamos a concatenar un valor static
+
+```py
+# Django
+from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
+from django.urls import path
+
+from platzigram import views as local_views
+from posts import views as posts_views
+
+
+urlpatterns = [
+
+    path('admin/', admin.site.urls),
+
+    path('hello-word/', local_views.hello_word),
+    path('numbers/', local_views.numbers),
+    path('hi/<str:name>/<int:age>', local_views.say_hi),
+
+    path('posts/', posts_views.list_posts),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# concatenamos static con los valores definidos en settings.py
+
+```
+
+Con esto estaría todo listo para que los valores definidos como links en los dashboard funcionen correctamente.
 
 ## 4. Templates, auth y middlewares
 
