@@ -64,6 +64,8 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Hacer funcionar los links de medias en desarollo](#hacer-funcionar-los-links-de-medias-en-desarollo)
     - [RETO: Crea el modelo de posts y regístralo en el admin](#reto-crea-el-modelo-de-posts-y-regístralo-en-el-admin)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
+    - [Archivos estáticos](#archivos-estáticos)
+    - [Templates](#templates)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
@@ -1149,6 +1151,79 @@ En la siguiente imagen se puede observar como agregariamos un post y que datos s
 ![adding_post](https://imgur.com/dtLmr8e.png)
 
 ## 4. Templates, auth y middlewares
+
+### Archivos estáticos
+
+> El concepto de archivos estáticos en Django, son archivos que se usan a través de la aplicación para pintar los datos. Pueden ser archivos de imagen, audio y video, o archivos css y scripts js.
+
+Los archivos estáticos son elementos de nuestro proyecto que podremos usar de forma transversal. Técnicamente podemos usar tipo de elemento como estético pero por lo general se hacen uso de **css** e **imágenes.**
+
+En la raíz de nuestro proyecto crearemos una carpeta llamada _static_, y en ella contendra otras 2 carpetas llamadas _css_ y _img_. Estas van a contener nuestros archivos **css** e **imagenes** respectivamente.
+
+![static_folder](https://imgur.com/puv3mqQ.png)
+
+Ahora vamos al archivo _settings.py_ de nuestro proyecto. Justo debajo de la variable **STATIC_URL** vamos a pegar las variables de **STATICFILES_DIRS** y **STATICFILES_FINDERS**. [En la documentación podemos encontrar mas información.](https://docs.djangoproject.com/en/3.1/ref/settings/#static-files)
+
+```py
+...
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static')
+]
+
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
+...
+```
+
+Con esto tus archivos estáticos ya pueden ser referenciados.
+
+### Templates
+
+Los templates de nuestro proyecto tienen la capacidad de **extenderse** desde otros templates, asi podremos reutilizar los elementos que deseamos, como por ejemplo un _navbar_.
+
+Para preparar todo iremos al archivo _settings.py_, y en la variable **TEMPLATES** vamos a definir donde buscar los **templates** para nuestro proyecto.
+
+```py
+TEMPLATES = [
+    {
+        ...
+        'DIRS': [
+            # Aqui definimos la carpeta donde ira a buscar el template nuestras aplicaciones.
+            os.path.join(BASE_DIR, 'templates'),
+        ],
+        ...
+    },
+]
+```
+
+En la **raíz** de nuestro proyecto crearemos la carpeta _templates_ definido anteriormente y dentro de este crearemos todos los elementos compartidos, como por ejemplo un **navbar, base, etc.** Para los templates **no compartidos** que deseamos agregar vamos a crear **carpetas** de estos elementos. Para nuestro ejemplo vamos a crear los templates compartidos de **base** y **navbar**, y para los elementos particulares crearemos las carpetas **posts** y **users**, con los archivos _feed.html_ y _base.html_ respectivamente.
+
+![templates](https://imgur.com/AA82MBV.png)
+
+- **templates/nav.html**: Primero vamos a crear nuestro navbar en el archivo _templates/**nav.html**_ y haremos referencias a nuestros **archivos estáticos** creados en la [sección anterior.](#Archivos-estáticos)
+
+- **templates/base.html**: Nuestro **navbar** aun no aparecera en nuestra aplicación. Para esto crearemos el archivo _templates/**base.html**_ y como lo hicimos en el archivo anterior vamos a cargar los **archivos estáticos.** Definamos tambien el **bloque del head** y el **container que desplegara los templates** que se extenderan.
+
+- **templates/posts/feed.html**: Con esto ya desplegamos nuestro template **navbar** dentro de **base**. Vamos a crear el template para **posts** que se **extendera** del archivo _templates/base.html_, el cual sera _templates/posts/**feed.html**_
+
+  - Como ahora este template esta fuera de la aplicación debemos referenciarla en el render de la vista, por lo que iremos a _posts/views.py_ a realizar los cambios. Lo referenciaremos como _**posts/feed.html**_ que hace referencia al path de _template/posts/feed.html_. **No es necesario definir la carpeta _templates_** ya que en el archivo _settings.py_ definimos que **los templates seran buscados en esta carpeta**.
+
+```py
+...
+
+def list_posts(request):
+    """List existing posts"""
+    # En la función que nos devuelve el render, debemos referenciar correctamente el template,
+    # en este caso a posts/feed.html
+    return render(request, 'posts/feed.html', {'posts': posts})
+```
+
+Ahora si revisamos el path de la aplicación [http://localhost:8000/posts/](http://localhost:8000/posts/) veremos el template de **base**, **navbar** y **posts** desplegados correctamente, ademas del head definido en _templates/posts/feed.html_
+
+![app](https://imgur.com/2dqZGU0.png)
 
 ## 5. Forms
 
