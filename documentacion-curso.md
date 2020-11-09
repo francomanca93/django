@@ -62,6 +62,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Personalizando Dashboards Nativos](#personalizando-dashboards-nativos)
     - [Relacionando modelos](#relacionando-modelos)
     - [Hacer funcionar los links de medias en desarollo](#hacer-funcionar-los-links-de-medias-en-desarollo)
+    - [RETO: Crea el modelo de posts y regístralo en el admin](#reto-crea-el-modelo-de-posts-y-regístralo-en-el-admin)
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
@@ -1109,6 +1110,43 @@ urlpatterns = [
 ```
 
 Con esto estaría todo listo para que los valores definidos como links en los dashboard funcionen correctamente.
+
+### RETO: Crea el modelo de posts y regístralo en el admin
+
+Reto de la clase:
+Crea el modelo de posts y regístralo en el admin.
+
+```py
+""" Posts admin classes."""
+
+# Django
+from django.contrib import admin
+
+# Models
+from posts.models import Post
+
+
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    """Posts Admin model"""
+
+    list_display = ('pk', 'user', 'title', 'photo')
+    list_display_links = ('pk', 'user')
+    list_editable = ('title', 'photo')
+
+    search_fields = ('user__username', 'title')
+    list_filter = ('created', 'modified')
+    readonly_fields = ('created', 'modified')
+
+```
+
+En la siguiente imagen podemos ver como se agrega la sección post agregando la clase PostAdmin. Se pueden observar las tuplas search_fields y list_filter agregadas en la clase:
+
+![post_menu](https://imgur.com/pfrF6r6.png)
+
+En la siguiente imagen se puede observar como agregariamos un post y que datos son relevantes para agregarlo:
+
+![adding_post](https://imgur.com/dtLmr8e.png)
 
 ## 4. Templates, auth y middlewares
 
