@@ -66,6 +66,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
   - [4. Templates, auth y middlewares](#4-templates-auth-y-middlewares)
     - [Archivos estáticos](#archivos-estáticos)
     - [Templates](#templates)
+    - [Login | Protegiendo vistas](#login--protegiendo-vistas)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
@@ -1224,6 +1225,106 @@ def list_posts(request):
 Ahora si revisamos el path de la aplicación [http://localhost:8000/posts/](http://localhost:8000/posts/) veremos el template de **base**, **navbar** y **posts** desplegados correctamente, ademas del head definido en _templates/posts/feed.html_
 
 ![app](https://imgur.com/2dqZGU0.png)
+
+### Login | Protegiendo vistas
+
+> Vamos a crear el login de nuestra aplicación, y este estara alojado en la aplicaciónde **users**. Tambien protegeremos las vistas de **posts** para solo poder acceder a ellas cuando estemos iniciados.
+
+[Documentacion de como hacer Login de Django](https://docs.djangoproject.com/en/3.1/topics/auth/default/#authentication-in-web-requests)
+
+Primero vamos a poner **alias a las rutas** de nuestro proyecto, de esta forma podemos referenciar al alias en cualquier parte de nuestra aplicación sin preocuparnos si cambian el path, para esto iremos a _urls.py_
+
+```py
+
+urlpatterns = [
+
+    path('admin/', admin.site.urls),
+
+    # A los path podemos asignarles valores a la variable name indicando un alias a la ruta
+    path('hello-word/', local_views.hello_word, name='hello_word'),
+    path('numbers/', local_views.numbers, name='numbers'),
+    path('hi/<str:name>/<int:age>', local_views.say_hi, name='hi'),
+
+    path('posts/', posts_views.list_posts, name='feed'),
+
+    path('users/login/', users_views.login_view, name='login')
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+```
+
+En el archivo _users/**views.py**_ vamos a renderizar el **login**
+
+```py
+
+""" Users views"""
+
+# Django
+# Importamos authenticate y login
+from django.contrib.auth import authenticate, login
+# Redirect nos ayudara a redireccionarnos a otro path
+from django.shortcuts import render, redirect
+
+# Create your views here.
+def login_view(request):
+    """ Login view."""
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        # El metodo authenticate tratara de contrastar el usuario
+        # con una instancia del modelo users que creamos.
+        user = authenticate(request, username=username, password=password)
+        if user:
+            # En caso de ser exitoso la autenticación creara
+            # un token de nuestro usuario para almacenarlo en memoria.
+            login(request, user)
+            # Y nos redireccionaremos al path con alias 'feed' que es 'posts/'
+            return redirect('feed')
+        else:
+            # En caso de dar false la autenticacion volveremos a renderizar el login, 
+            # pero enviando la variable 'error'
+            return render(request,
+                          'users/login.html',
+                          {'error': 'Invalid username and pasword'})
+    return render(request, 'users/login.html')
+
+```
+
+En _templates/users_ crearemos 2 archivos, **base.html** y **login.html**. La razón del porque ocuparemos un base distinto al anterior es por que a nivel de contenido son distintos, sin embargo _template/users/**login.html**_ extendera de _template/users/**base.html**_
+
+En el archivo _login.html_ hacemos uso del metodo **csrf_token** de Django. Este método evita un tipo de exploit malicioso llamado **"Cross-site request forgery"**, el cual consiste en llenados de formularios desde fuera del sitio. La forma en la que trabaja _csrf_token_ es que cuando se realiza una peticion 'GET' se te envia un token único, y cuando realizas el submit del formulario con un metodo 'POST' se va a revisar el token que conseguiste antes, de esta forma se evita el exploit.
+
+![csrf_token](https://imgur.com/cUr8kA0.png)
+
+Ahora para **proteger** las vistas de _posts_ y solo podamos acceder a ellas si hemos **iniciado sesión** vamos al archivo _settings.py_ de nuestro proyecto y al fondo del código creamos la variable **LOGIN_URL** con el path de nuestro **login**, de esta forma nos redigira al path definido si tratamos de renderizar una vista protegida.
+
+```py
+...
+# Usamos el alias del path de login
+LOGIN_URL = 'login'
+```
+
+Ahora para proteger las vistas debemos ir al archivo views.py de nuestra aplicación.
+
+```py
+# Django
+# Importamos login_required
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+
+...
+
+# Decoramos con login_required la función que renderiza nuestra vista,
+# el cual ahora necesitara una sesión iniciada para poder renderizarse.
+# En caso de no estarlo nos redirigira al path de login.
+@login_required
+def list_posts(request):
+  return render(request, 'posts/feed.html', {'posts': posts})
+```
+
+Ahora veamos las vistas protegidas en acción. Con un usuario **sin registrar** nos va a volver a redirigir a la pagina de login.
+
+Y si el usuario está **registrado** podremos ver los posts.
 
 ## 5. Forms
 
