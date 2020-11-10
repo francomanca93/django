@@ -68,6 +68,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Templates](#templates)
     - [Login | Protegiendo vistas](#login--protegiendo-vistas)
     - [Logout](#logout)
+    - [Signup](#signup)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
@@ -1382,6 +1383,93 @@ Y por terminar, en el **html** haremos referencia al path de 'logout'.
 ```
 
 Listo, ahora tenemos un logout funcionando perfectamente de forma sencilla.
+
+### Signup
+
+> Crearemos el Registro de usuario a partir de la clase perfil, por lo que usaremos un formulario personalizado. Definiremos un nuevo Template para el formulario. Dejaremos que el browser se encargue de las validaciones generales. Sólo validaremos en python la coincidencia entre password y confirmación del password. Incluiremos una validación con try/catch para evitar que se dupliquen usuarios con mismo nombre.
+
+[Documetation about how Using the Django authentication system](https://docs.djangoproject.com/en/3.1/topics/auth/default/#creating-users)
+
+Primero crearemos un **template** para el registro, asi que creamos el archivo **template/users/signup.html**. El código html se encuentra en él.
+
+El template quedaria de la sigueinte manera:
+
+![signup](https://imgur.com/Y2itqOA.png)
+
+Teniendo listo nuestro **template** ahora crearemos la función que renderizara nuestra vista. Para ello iremos a _users/**views.py**_
+
+```py
+# Django
+...
+# Vamos hacer uso de render y redirect
+from django.shortcuts import render, redirect
+
+# Exceptions
+# Importamos posible error al tratar de crear una instancia con valor único que ya existe
+from django.db.utils import IntegrityError
+
+# Models
+# Importamos los modelos de las instancias que crearemos
+from django.contrib.auth.models import User
+from users.models import Profile
+
+...
+
+def signup(request):
+    """ Sign up view."""
+    if request.method == 'POST':
+        email = request.POST['email']
+        username = request.POST['username']
+        passwd = request.POST['passwd']
+        passwd_confirmation = request.POST['passwd_confirmation']
+
+        # PASSWORD VALIDATION
+        if passwd != passwd_confirmation:
+            error = 'The passwords do not match.'
+            return render(request, 'users/signup.html', {'error': error})
+
+        # EMAIL VALIDATION
+        email_validation = User.objects.filter(email=email)
+        if email_validation:
+            error = f'There is another account using {email}'
+            return render(request, 'users/signup.html', {'error': error})
+
+        # USERNAME VALIDATION
+        try:
+            user = User.objects.create_user(username=username, password=passwd)
+            user.first_name = request.POST['first_name']
+            user.last_name = request.POST['last_name']
+            user.email = email
+            user.save()
+        except IntegrityError:
+            return render(request, 'users/signup.html',
+                          {'error': 'Username is already exist'})
+
+        profile = Profile(user=user)
+        profile.save()
+
+        return redirect('login')
+
+    return render(request, 'users/signup.html')
+
+
+...
+```
+
+Ahora nos faltaría solo asignar un path a nuestro signup, lo configuraremos en _urls.py_
+
+```py
+...
+
+urlpatterns = [
+  ...
+  
+  path('users/signup/', users_views.signup, name='signup'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+...
+```
 
 ## 5. Forms
 
