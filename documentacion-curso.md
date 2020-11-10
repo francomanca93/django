@@ -69,6 +69,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Login | Protegiendo vistas](#login--protegiendo-vistas)
     - [Logout](#logout)
     - [Signup](#signup)
+    - [Middlewares](#middlewares)
   - [5. Forms](#5-forms)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
@@ -1470,6 +1471,116 @@ urlpatterns = [
 
 ...
 ```
+
+### Middlewares
+
+> Veremos que son los Middlewares, como funcionan y como nos puede ayudar a resolver el problema de que cada usuario tenga su perfil completo antes de poder usar la app.
+
+[Documentation in Django about Middlewares](https://docs.djangoproject.com/en/3.1/topics/http/middleware/)
+
+Un middleware en Django es una serie de hooks y una API de bajo nivel que nos permiten modificar el objeto request antes de que llegue a la vista y response antes de que salga de la vista.
+
+Django dispone de los siguientes middlewares por defecto:
+
+- **SecurityMiddleware**: Se encarga de comprobar todas las medidas de seguridad, las variables de settings relacionadas con Https, Auth, entre otros.
+- **SessionMiddleware**: Se encarga de validar una sesión.
+- **CommonMiddleware**: Se encarga de verificar componentes comunes como lo es el debug.
+- **CsrfViewMiddleware**: Se encarga de toda la validación correspondiente a CSRF. Éste nos permite utilizar el tag {% csrf_token %} y es el que inserta el token de seguridad en cada formulario.
+- **AuthenticationMiddleware**: Nos permite agregar request.user desde las vistas.
+- **MessageMiddleware**: Pertenece al Framework de mensajes de Django, y permite pasar un mensaje sin necesidad de mantener un estado en la base de datos o en memoria.
+- **XFrameOptionsMiddleware**: Middleware de seguridad.
+
+![middleware](https://imgur.com/zz7HrVZ.png)
+
+Crearemos un middleware para redireccionar al usuario al perfil para que actualice su información cuando no haya definido aún biografía o avatar.
+
+En este apartado aprenderemos como crear nuestro propio **middleware**, este no permitira la navegación en la aplicación si es que el usuario **no tiene fotografia o biografía.**
+
+Primero crearemos un template del perfil donde el usuario podra modificar su información. Este template sera simple por el momento y estara en _templates/users/**update_profile.html**_.
+
+Ahora en nuestro archivo _users/views.py_ vamos a crear la funcion que renderizara el template recien creado.
+
+```py
+...
+
+@login_required
+def update_profile(request):
+    """ Update a user's profile view."""
+    return render(request, 'users/update_profile.html')
+...
+```
+
+Luego de definir nuestra vista vamos asignarle un path dentro del archivo _urls.py_
+
+```py
+...
+
+urlpatterns = [
+  ...
+  
+  path('users/me/profile', users_views.update_profile, name='update_profile'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+
+Ahora crearemos nuestro **middleware**. Por lo general los middleware se crean en la aplicación relacionada, pero **solo para efectos practicos** crearemos el nuestro en la carpeta principal de nuestro proyecto como **middleware.py**
+
+![middleware](https://imgur.com/EFwTPix.png)
+
+El **objetivo** de nuestro middleware es evitar que se pueda navegar por la aplicación si es que el usuario no tiene foto de perfil o no ha escrito su biografía, por lo que nuestro middleware contendra una clase que realizara todas estas validaciones.
+
+```py
+""" Platzigram middleware catalog."""
+
+# Django
+from django.shortcuts import redirect
+from django.urls import reverse
+
+
+class ProfileCompletionMiddleware:
+    """ Profile Completion Middleware.
+
+    Ensure every user that is interacting with the platform
+    have their profile picture and biography.
+    """
+
+    def __init__(self, get_response):
+        """ Middleware initialization."""
+        self.get_response = get_response
+
+    def __call__(self, request):
+        """ Code to be executed for each request before the view is called."""
+
+        if not request.user.is_anonymous:
+            profile = request.user.profile
+            if not profile.picture or not profile.biography:
+                if request.path not in [reverse('update_profile'),
+                                        reverse('logout')]:
+                    return redirect('update_profile')
+
+        response = self.get_response(request)
+        return response
+```
+
+Ahora tenemos que decirle a nuestro proyecto que ahora también debe usar este middleware para las peticiones. Para ello iremos al archivo _settings.py_ y lo incluiremos en la variable de **MIDDLEWARE.**
+
+```py
+MIDDLEWARE = [
+    # Django
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Propios
+    # Referenciamos al middleware por el nombre de la clase
+    'photogram.middleware.ProfileCompletionMiddleware',
+]
+```
+
+Y con esto ya creamos nuestro primer middleware.
 
 ## 5. Forms
 
