@@ -71,6 +71,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Signup](#signup)
     - [Middlewares](#middlewares)
   - [5. Forms](#5-forms)
+    - [Formularios en Django](#formularios-en-django)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
   - [8. Bonus](#8-bonus)
@@ -1583,6 +1584,104 @@ MIDDLEWARE = [
 Y con esto ya creamos nuestro primer middleware.
 
 ## 5. Forms
+
+### Formularios en Django
+
+> En esta seccion vamos a tener una primera aproximación a los formularios de Django, ver como una clase utilitaria nos ayuda a hacer el trabajo que se realiza repetitivamente y se terminará la parte de completar un perfil de usuario.
+
+[Documentation in Django about Forms](https://docs.djangoproject.com/en/3.1/topics/forms/)
+
+En esta sección veremos en acción los **forms** en Django. Primero que todo crearemos nuestro form en _templates/users/**update_profile.html**_ creado en la sección de [middlewares](#Middlewares). Algo asi nos quedaria el formulario:
+
+![form_image](https://imgur.com/vpsERKu.png)
+
+Django ya incorpora una **clase forms** del cual podemos hacer uso, asi que crearemos nuestra clase forms para crear un formulario de usuario.
+
+```py
+""" User forms."""
+
+from django import forms
+
+
+class ProfileForm(forms.Form):
+    """ Profile form."""
+
+    website = forms.URLField(max_length=200, required=True)
+    biography = forms.CharField(max_length=500, required=False)
+    phone_number = forms.CharField(max_length=20, required=False)
+    picture = forms.ImageField()
+
+```
+
+![form](https://imgur.com/niuJWbS.png)
+
+En la documentación podras encontrar como trabajar con [formularios](https://docs.djangoproject.com/en/3.1/topics/forms/) y los [campos](https://docs.djangoproject.com/en/3.1/ref/forms/fields/) que puedes usar.
+
+Para poder recibir los datos y guardarlos en nuestra base de datos vamos a ir a nuestra vista de la aplicación _users/**views.py**_ en donde crearemos la función que se encargara de ello.
+
+```py
+# Archivo users/views.py
+...
+
+# Forms
+# Importamos el ProfileForm que creamos anteriormente
+from users.forms import ProfileForm
+
+
+# En la vista de update_profile vamos a recibir el request.
+@login_required
+def update_profile(request):
+    """ Update a user's profile view."""
+
+    # Crearemos una variable que guardara el profile
+    # que esta realizando el request.
+    profile = request.user.profile
+
+    # Si el request es de tipo 'POST'
+    if request.method == 'POST':
+
+        # Crearemos una instancia de ProfileForm
+        # con los datos que recibimos a traves de request
+        form = ProfileForm(request.POST, request.FILES)
+
+        # Si la instacia se crea sin problemas.
+        if form.is_valid():
+
+            #Guardaremos los datos recibidos en base de datos.
+            data = form.cleaned_data
+
+            profile.website = data['website']
+            profile.phone_number = data['phone_number']
+            profile.biography = data['biography']
+            profile.picture = data['picture']
+            profile.save()
+
+            # Y redireccionaremos a la pagina update_profile
+            # para reflejar los cambios.
+            return redirect('update_profile')
+    else:
+        form = ProfileForm()
+
+    return render(
+        request=request,
+        template_name='users/update_profile.html',
+
+        # Enviaremos al template los datos del usuario.
+        context={
+            'profile': profile,
+            'user': request.user,
+            'form': form
+        }
+    )
+
+...
+```
+
+Terminados estos pasos podremos ver nuestro profile con los datos de nuestro usuario y actualizarlos, preservando los datos.
+
+En caso de que algun dato no cumpla con los requisitos establecidos en la clase form desplegaremos en pantalla los errores que tengamos.
+
+![forms_error](https://imgur.com/fCnn9tg.png)
 
 ## 6. Class-based views
 
