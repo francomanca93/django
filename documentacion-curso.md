@@ -72,6 +72,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Middlewares](#middlewares)
   - [5. Forms](#5-forms)
     - [Formularios en Django](#formularios-en-django)
+    - [Mostrando el form en el template](#mostrando-el-form-en-el-template)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
   - [8. Bonus](#8-bonus)
@@ -1682,6 +1683,20 @@ Terminados estos pasos podremos ver nuestro profile con los datos de nuestro usu
 En caso de que algun dato no cumpla con los requisitos establecidos en la clase form desplegaremos en pantalla los errores que tengamos.
 
 ![forms_error](https://imgur.com/fCnn9tg.png)
+
+### Mostrando el form en el template
+
+> Existen diferentes formas en las que se pueden mostrar los valores del form, estas son: as_table, as_p y as_ul. También se pueden mostrar campos de manera individual, incluso customizar las clases que se van a usar para mostrar los errores, etc. Refinaremos la apariencia del form a través de algunas refactorizaciones en el template.
+
+[Documentation in Django about how working with form templates](https://docs.djangoproject.com/en/3.1/topics/forms/#working-with-form-templates)
+
+En la sección anterior, si enviamos campos inválidos estos vuelven con el valor anterior que tenian. En esta sección haremos persistentes estos datos.
+
+Para ello solo tendremos que modificar nuestro _template/**update_profile.html**_
+
+Con los cambios hechos en **template/update_profile.html** los valores ingresados **persistiran** en nuestro formulario sin importar si existe un error, ademas de mostrarlos de forma estilizadas.
+
+![forms_invalid_entries](https://imgur.com/TlIw9Fi.png)
 
 ## 6. Class-based views
 
