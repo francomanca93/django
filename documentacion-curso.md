@@ -1703,6 +1703,8 @@ Con los cambios hechos en **template/update_profile.html** los valores ingresado
 
 > ModelForm es una manera más sencilla de crear formularios en Django y en el caso de nuestro proyecto, se adapta mucho mejor al modelo que ya tenemos. Esto es lo que haremos en esta sección, lo usaremos para crear el formulario de posts.
 
+[Documentation in Django about model forms](https://docs.djangoproject.com/en/3.1/topics/forms/modelforms/)
+
 Ahora la dirección **http://127.0.0.1:8000/** nos llevará al feed y creamos una nueva url para crear nuevos post, todo esto en el archivo urls.py
 
 ```py
@@ -1781,6 +1783,23 @@ Cuando agregamos un post, no lo podremos ver aún reflejado en el front pero si 
 
 ![post_in_admin](https://imgur.com/FcV3c6R.png)
 
+> Aprovecharemos para refinar la funcionalidad en el navbar y conectar el feed con los posts.
+
+En el archivo de la carpeta template modificamos el **nav.html** para que los botones nos redirijan a los lugares adecuados.
+
+Luego conectaremos el feed con los posts, modificando posts/views.py y modificando el template de posts/feed.html
+
+Borramos lo que teniamos hardcoreado y vinculamos los posts creados con el feed. Mostramos desdes el ultimos creado. 
+
+```py
+
+@login_required
+def list_posts(request):
+    """List existing posts"""
+    posts = Post.objects.all().order_by('-created')
+    return render(request, 'posts/feed.html', {'posts': posts})
+
+```
 
 ## 6. Class-based views
 
