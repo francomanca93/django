@@ -73,6 +73,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
   - [5. Forms](#5-forms)
     - [Formularios en Django](#formularios-en-django)
     - [Mostrando el form en el template](#mostrando-el-form-en-el-template)
+    - [Model forms](#model-forms)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
   - [8. Bonus](#8-bonus)
@@ -1697,6 +1698,89 @@ Para ello solo tendremos que modificar nuestro _template/**update_profile.html**
 Con los cambios hechos en **template/update_profile.html** los valores ingresados **persistiran** en nuestro formulario sin importar si existe un error, ademas de mostrarlos de forma estilizadas.
 
 ![forms_invalid_entries](https://imgur.com/TlIw9Fi.png)
+
+### Model forms
+
+> ModelForm es una manera más sencilla de crear formularios en Django y en el caso de nuestro proyecto, se adapta mucho mejor al modelo que ya tenemos. Esto es lo que haremos en esta sección, lo usaremos para crear el formulario de posts.
+
+Ahora la dirección **http://127.0.0.1:8000/** nos llevará al feed y creamos una nueva url para crear nuevos post, todo esto en el archivo urls.py
+
+```py
+urlpatterns = [
+    ...
+    path('', posts_views.list_posts, name='feed'),
+    path('posts/new/', posts_views.create_post, name='create_post'),
+    ...
+```
+
+Luego crearemos forms.py en la carpeta posts
+
+```py
+""" Post forms."""
+
+# Django
+from django import forms
+
+# Models
+from posts.models import Post
+
+
+class PostForm(forms.ModelForm):
+    """ Post model forms."""
+
+    class Meta:
+        """ Form settings"""
+
+        model = Post
+        fields = ('user', 'profile', 'title', 'photo')
+```
+
+Luego crearemos una nueva vista en posts/views.py que será la lógica de creación de un nuevo post. 
+
+```py
+# Django
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+
+# Forms
+from posts.forms import PostForm
+
+@login_required
+def create_post(request):
+    """ Create new post view."""
+    if request.method == 'POST':
+        form = PostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('feed')
+    else:
+        form = PostForm()
+
+    return render(
+        request=request,
+        template_name='posts/new.html',
+        context={
+            'form': form,
+            'user': request.user,
+            'profile': request.user.profile
+        }
+    )
+
+
+```
+
+Para finalizar esta parte lo que hacemos finalmente es crear el tamplate en **new.html** en posts quedando la vista de la siguiente manera:
+
+![new_post](https://imgur.com/8flresa.png)
+
+y si no posteamos nada y queremos enviar datos vacios nos aparecerá lo siguiente:
+
+![new_post_error](https://imgur.com/1qURzno.png)
+
+Cuando agregamos un post, no lo podremos ver aún reflejado en el front pero si en el back
+
+![post_in_admin](https://imgur.com/FcV3c6R.png)
+
 
 ## 6. Class-based views
 
