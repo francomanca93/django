@@ -74,6 +74,10 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
     - [Formularios en Django](#formularios-en-django)
     - [Mostrando el form en el template](#mostrando-el-form-en-el-template)
     - [Model forms](#model-forms)
+    - [Validación de formularios](#validación-de-formularios)
+      - [Agregaremos enlace hacia signup en la vista login](#agregaremos-enlace-hacia-signup-en-la-vista-login)
+      - [Forma mas facil de trabajar con los templates](#forma-mas-facil-de-trabajar-con-los-templates)
+      - [Aprendiendo a validad campos de un formulario](#aprendiendo-a-validad-campos-de-un-formulario)
   - [6. Class-based views](#6-class-based-views)
   - [7. Deployment](#7-deployment)
   - [8. Bonus](#8-bonus)
@@ -1800,6 +1804,189 @@ def list_posts(request):
     return render(request, 'posts/feed.html', {'posts': posts})
 
 ```
+
+### Validación de formularios
+
+#### Agregaremos enlace hacia signup en la vista login
+
+> Agregaremos enlace hacia signup en la vista login
+
+Resolviendo el primer caso, el de agregar un enlace hacia signup en la vista login lo que hacemos es agregar la siguiente linea de código en **templates/users/login.html**.
+
+```html
+<p class="mt-4">Don't have an account yet? <a href="{% url 'signup' %}">Sign up here</a></p>
+```
+
+#### Forma mas facil de trabajar con los templates
+
+Django cuenta con una forma mas facil de trabajar con los templates, como podemos ver en el siguiente enlace a la documentación:
+
+[Documentation in Django about working with form template](https://docs.djangoproject.com/en/3.1/topics/forms/#working-with-form-templates)
+
+En nuestro caso lo que hicimos fue eliminar el form creado por nosotros en el frontend y utilizar las herramientas que nos da Django
+
+```html
+{{ form.as_p }}
+```
+
+Tambien le agregamos la linea de codigo siguiente para que nos redirija al Login si nos encontramos registrados:
+
+```html
+
+  <p class="form-text mt-2">If you already have an account <a href="{% url 'login' %}">Log in!</a></p>
+
+
+```
+
+#### Aprendiendo a validad campos de un formulario
+
+> Para aprender a validar los campos de un formulario vamos a actualizar el registro de usuarios.
+
+Hasta este momento el script de validación del formulario Signup está escrito directamente en la vista, y a pesar de que no genera ningún error, puede convertirse en un problema, así que lo recomendable es separarlo. Crearemos un nuevo form con la clase forms.Form, también vamos a introducir un nuevo concepto relacionado con formularios: los widgets.
+
+[Documentation in Django about forms fields](https://docs.djangoproject.com/en/3.1/ref/forms/fields/)
+[Documentation in Django about form and field validation](https://docs.djangoproject.com/en/3.1/ref/forms/validation/)
+
+Los widgets en Django, son una representación de elementos de HTML que pueden incluir ciertas validaciones. Por default todos los campos son requeridos. Los datos depurados se pueden consultar con self.cleaned_data['_nombre_del_field_']
+
+[Documentation in Django about widgets](https://docs.djangoproject.com/en/3.1/ref/forms/widgets/)
+
+Todo lo explicado anteriormente lo podemos ver reflejado en la siguiente clase en forms.py dentro de platzigram/users/:
+
+```py
+# Models
+from django.contrib.auth.models import User
+from users.models import Profile
+
+
+class SignupForm(forms.Form):
+    """Sign up form"""
+
+    username = forms.CharField(
+        label=False,
+        min_length=4,
+        max_length=50,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Nombre de usuario',
+                'class': 'form-control',
+                'required': True})
+    )
+
+    password = forms.CharField(
+        label=False,
+        max_length=70,
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': 'Escribe tu contraseña',
+                'class': 'form-control',
+                'required': True})
+    )
+
+    password_confirmation = forms.CharField(
+        label=False,
+        max_length=70,
+        widget=forms.PasswordInput(
+            attrs={
+                'placeholder': 'Confirma tu contraseña',
+                'class': 'form-control',
+                'required': True})
+    )
+
+    first_name = forms.CharField(
+        label=False,
+        min_length=2,
+        max_length=50,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Nombres',
+                'class': 'form-control',
+                'required': True})
+    )
+
+    last_name = forms.CharField(
+        label=False,
+        min_length=2,
+        max_length=50,
+        widget=forms.TextInput(
+            attrs={
+                'placeholder': 'Apellidos',
+                'class': 'form-control',
+                'required': True})
+    )
+
+    email = forms.EmailField(
+        label=False,
+        min_length=6,
+        max_length=70,
+        widget=forms.EmailInput(
+            attrs={
+                'placeholder': 'Correo electrónico',
+                'class': 'form-control',
+                'required': True})
+    )
+
+    def clean_username(self):
+        """Username must be unique.
+        Confirmamos que el usuario sea unico"""
+        username = self.cleaned_data["username"]
+        username_taken = User.objects.filter(username=username).exists()
+        if username_taken:
+            raise forms.ValidationError('Username is already in use.')
+        return username
+
+    def clean(self):
+        """Verify password confirmation match.
+        Podemos confirmar otros datos que no sean el usuario"""
+        data = super().clean()
+
+        password = data['password']
+        password_confirmation = data['password_confirmation']
+
+        if password != password_confirmation:
+            raise forms.ValidationError('Passwords do not match')
+
+        return data
+
+    def save(self):
+        """Create user and profile.
+        Como usamos los datos una vez que son validos"""
+        data = self.cleaned_data
+        data.pop('password_confirmation')
+
+        user = User.objects.create_user(**data)
+        profile = Profile(user=user)
+        profile.save()
+
+```
+
+En views.py lo que hacemos es agregar una función intermediaria entre el forms que se comunican con la base de datos y los templates que nos dan la vista del usuario 
+
+```py
+
+# Forms
+from users.forms import ProfileForm, SignupForm
+
+def signup(request):
+    """ Sign up view.
+    Intermediario"""
+    if request.method == "POST":
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = SignupForm()
+
+    return render(
+        request=request,
+        template_name='users/signup.html',
+        context={'form': form}
+    )
+
+```
+
+
 
 ## 6. Class-based views
 
