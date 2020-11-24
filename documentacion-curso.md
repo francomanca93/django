@@ -79,6 +79,7 @@ Con Django podemos crear sitios web fácilmente. Aprenderemos sobre la conectivi
       - [Forma mas facil de trabajar con los templates](#forma-mas-facil-de-trabajar-con-los-templates)
       - [Aprendiendo a validad campos de un formulario](#aprendiendo-a-validad-campos-de-un-formulario)
   - [6. Class-based views](#6-class-based-views)
+    - [Simple Class-based views](#simple-class-based-views)
   - [7. Deployment](#7-deployment)
   - [8. Bonus](#8-bonus)
 
@@ -1986,9 +1987,98 @@ def signup(request):
 
 ```
 
-
-
 ## 6. Class-based views
+
+### Simple Class-based views
+
+Veamos de qué forma optimizamos el proceso de creación de nuestras apps de forma que no repitamos código. Para ver cuál es el concepto de class based views.
+
+Las vistas también pueden ser clases, que tienen el objetivo de evitar la repetición de tareas como mostrar los templates, son vistas genéricas que resuelven problemas comunes.
+
+[Documentation in Django about Class-based views](https://docs.djangoproject.com/en/3.1/topics/class-based-views/)
+[Documentation in Django about Built-in class-based views API](https://docs.djangoproject.com/en/3.1/ref/class-based-views/)
+[Documentation about Django - Class and Class-Based Views](http://ccbv.co.uk/)
+
+> Haremos en esta seccion presentacion de template usando las vistas basadas en clases, el cual es el más sencillo de implementar. Haremos la presentación del perfil de usuario.
+
+Cambiamos las urls.py de la carpeta platzigram
+
+```py
+from django.urls import path, include
+
+urlpatterns = [
+
+    path('admin/', admin.site.urls),
+
+    path('', include(('posts.urls', 'posts'), namespace='posts')),
+    path('users/', include(('users.urls', 'users'), namespace='users')),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+```
+
+Y las urls que se encontraban en ese archivo las llevamos a posts/urls.py y users/urls.py
+
+En esos archivos trabajaremos las TemplateViews.
+
+Hay que cambiar las url de los **templates views** y **middleware** para que funcione la aplicación:
+
+En la carpeta platzigram en middleware midificamos esto:
+
+```py
+if request.path not in [reverse('users:update_profile'), ('users:logout')]:
+    return redirect('users:update_profile')
+```
+
+En template/users/update_profile.html
+
+```html
+<form action="{% url 'users:update_profile' %}" method="POST" enctype="multipart/form-data">
+```
+
+En template/users/login.html se cambia en dos lineas
+
+```html
+<form method="POST" action="{% url "users:login" %}">
+
+<p class="mt-4">Don't have an account yet?<a href="{% url "users:signup" %}">Sign up here.</a></p>
+```
+
+En template/users/signup.html
+
+```html
+<form action = "{% url 'users:signup' %}" method="POST">
+```
+
+En posts/views.py en la funcion create_post
+
+```py
+return redirect('posts:feed')
+```
+
+Y por ultimo en users/views.py se cambia en:
+
+La función login_view
+
+```py
+return redirect('posts:feed')
+```
+
+La funcion logout_view
+```py
+return redirect('users:login')
+```
+
+La funcion signup
+
+```py
+return redirect('users:login')
+```
+
+Y por ultimo la funcion update_profile
+
+```py
+return redirect('users:update_profile')
+```
 
 ## 7. Deployment
 
