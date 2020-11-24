@@ -11,8 +11,8 @@
         <p class="alert alert-danger">{{ error }}</p>
     {% endif %}
     
-    <!-- Agregamos {% url "login" %} para poder invocar como 'login' y si alguna vez cambia url no habrá problemas. -->
-    <form action="{% url "login" %}" method="POST">
+    <!-- Agregamos {% url "users:login" %} para poder invocar como 'login' y si alguna vez cambia url no habrá problemas. -->
+    <form action="{% url 'users:login' %}" method="POST">
         <!-- csrf_token es un metodo de Django para evitar ataques CSRF("Cross-site request forgery"). -->
         {% csrf_token %}
 
@@ -24,6 +24,6 @@
         <button class="btn btn-primary btn-block" type="submit">Sign in</button>
     </form>
 
-    <p class="mt-4">Don't have an account yet? <a href="{% url 'signup' %}">Sign up here</a></p>
+    <p class="mt-4">Don't have an account yet? <a href="{% url 'users:signup' %}">Sign up here</a></p>
 
 {% endblock container %}
